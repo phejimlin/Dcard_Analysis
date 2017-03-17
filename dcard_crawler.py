@@ -11,15 +11,14 @@ db = client.dcard
 # post_url = 'https://www.dcard.tw/_api/posts/' + post_id
 # comment_url = 'https://www.dcard.tw/_api/posts/'+ post_id + '/comments?after=60'
 
-forum_name_list = ['talk', 'acg', 'game', 'pokemon', 'movie', 'photography', '3c', 'job', 'music', 'sport', 'travel', 'book', 'studyabroad', 'literature', 'exam', 'course', 'sex', 'dcard', 'whysoserious']
-#forum_name_list = ['vehicle', 'language', 'relationship', 'girl', 'makeup', 'dressup', 'funny', 'rainbow', 'marvel', 'boy', 'horoscopes', 'food', 'mood', 'pet', 'handicrafts', 'trending', 'talk', 'acg', 'game', 'pokemon', 'movie', 'photography', '3c', 'job', 'music', 'sport', 'travel', 'book', 'studyabroad', 'literature', 'exam', 'course', 'sex', 'dcard', 'whysoserious']
+forum_name_list = ['vehicle', 'language', 'relationship', 'girl', 'makeup', 'dressup', 'funny', 'rainbow', 'marvel', 'boy', 'horoscopes', 'food', 'mood', 'pet', 'handicrafts', 'trending', 'talk', 'acg', 'game', 'pokemon', 'movie', 'photography', '3c', 'job', 'music', 'sport', 'travel', 'book', 'studyabroad', 'literature', 'exam', 'course', 'sex', 'dcard', 'whysoserious']
 # board_name = ['汽機車', '語言', '感情', '女孩', '美妝', '穿搭', '有趣', '彩虹', '靈異', '男孩', '星座', '美食', '心情', '寵物', '手作', '時事', '閒聊', '動漫', '遊戲', '寶可夢', '影劇', '攝影', '3C', '工作', '音樂', '運動', '旅遊', '書籍', '留學', '詩文', '考試', '課程', '西斯', 'Dcard', '廢文']
 
 
 def crawl_posts_list(forum_name, last_post_id=None):
     print("crawling forum_name: " + forum_name)
     forum_url = 'https://www.dcard.tw/_api/forums/' + forum_name + '/posts'
-    if last_post_id != None:
+    if last_post_id is not None:
         print("crawling forum_name: " + forum_name + " before = " + str(last_post_id))
         forum_url = 'https://www.dcard.tw/_api/forums/' + forum_name + '/posts?before=' + str(last_post_id)
     res = crawler(forum_url)
@@ -34,13 +33,13 @@ def crawl_post(post_id):
     return res
 
 
-def crawl_comment(post_id, lase_comment_count = None):
-    print("crawling comment: "+ str(post_id))
-    comment_url = 'https://www.dcard.tw/_api/posts/'+ str(post_id) +'/comments?after=' + str(lase_comment_count)
+def crawl_comment(post_id, lase_comment_count=None):
+    print("crawling comment: " + str(post_id))
+    comment_url = 'https://www.dcard.tw/_api/posts/' + str(post_id) + '/comments?after=' + str(lase_comment_count)
     res = crawler(comment_url)
-    print("comment length: "+ str(len(res)))
+    print("comment length: " + str(len(res)))
     return res
- 
+
 
 def change_id_to_mongodb_format(data_list):
     if type(data_list) == dict:
@@ -55,8 +54,6 @@ def change_id_to_mongodb_format(data_list):
             print(repr(e))
     return data_list
 
-
-# In[12]:
 
 def crawler(url):
     res = requests.get(url)
@@ -79,9 +76,9 @@ def crawler(url):
 
 
 def insert_to_mongodb(collection_name, data_list):
-    if len(data_list) > 0 :
+    if len(data_list) > 0:
         for data in data_list:
-            db[collection_name].update_one({'_id':data['_id']}, {'$set': data}, True)
+            db[collection_name].update_one({'_id': data['_id']}, {'$set': data}, True)
         return
     else:
         return
@@ -115,10 +112,10 @@ for forum_name in forum_name_list:
                     insert_to_mongodb(forum_name + '_comments', change_id_to_mongodb_format(comment_data))
                     last_comment_count += 30
             # To crawl next 30 posts
-            if index == len(posts_list)-1:
+            if index == len(posts_list) - 1:
                 print("Crawl next 30 posts!")
                 last_post_id = post_id
 
 
-# todo 把每一篇論壇文章 拿去做LDA 可以找出subtitle. 
+# todo 把每一篇論壇文章 拿去做LDA 可以找出subtitle.
 # todo 可以用query 把撈出的文章 做LDA 看準不準
